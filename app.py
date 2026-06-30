@@ -20,8 +20,10 @@ app = Flask(__name__)
 # Localmente, sem essa variável, cai automaticamente para SQLite (bolao.db).
 database_url = os.environ.get("DATABASE_URL", "")
 if database_url.startswith("postgres://"):
-    # Render/Heroku usam "postgres://", mas o SQLAlchemy moderno exige "postgresql://"
-    database_url = database_url.replace("postgres://", "postgresql://", 1)
+    # Render/Heroku usam "postgres://"; SQLAlchemy + psycopg3 exigem "postgresql+psycopg://"
+    database_url = database_url.replace("postgres://", "postgresql+psycopg://", 1)
+elif database_url.startswith("postgresql://"):
+    database_url = database_url.replace("postgresql://", "postgresql+psycopg://", 1)
 
 if not database_url:
     database_url = "sqlite:///" + os.path.join(os.path.dirname(__file__), "bolao.db")
