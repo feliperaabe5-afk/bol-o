@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>🏆 Bolão App</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --green:#16a34a;--green-d:#15803d;--green-bg:#f0fdf4;--green-b:#bbf7d0;--green-deep:#14532d;
+  --blue:#2563eb;--blue-bg:#eff6ff;--blue-b:#bfdbfe;
+  --yellow:#d97706;--yellow-bg:#fffbeb;--yellow-b:#fde68a;
+  --red:#dc2626;--red-bg:#fef2f2;--red-b:#fecaca;
+  --gray:#6b7280;--surface:#fff;--s1:#f9fafb;--s2:#f3f4f6;
+  --border:#e5e7eb;--border2:#d1d5db;
+  --text:#111827;--text2:#4b5563;--text3:#9ca3af;
+  --radius:8px;--shadow:0 1px 3px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.05);
+}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--s1);color:var(--text);min-height:100vh}
+
+/* ── header ── */
+header{background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:50;padding:0 1.5rem}
+.hinner{max-width:960px;margin:0 auto;display:flex;align-items:center;gap:10px;height:58px}
+.logo{font-size:26px}
+.brand{font-size:17px;font-weight:700;color:var(--text)}.brand span{color:var(--green)}
+
+/* ── container ── */
+.wrap{max-width:960px;margin:0 auto;padding:1.5rem 1rem}
+
+/* ── tabs ── */
+.tabs{display:flex;gap:4px;background:var(--s2);border:1px solid var(--border);border-radius:10px;padding:4px;margin-bottom:1.5rem}
+.tab{flex:1;padding:9px 4px;border:none;border-radius:6px;background:transparent;color:var(--text2);font-size:13px;font-weight:500;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:5px}
+.tab:hover:not(.active){background:var(--surface);color:var(--text)}
+.tab.active{background:var(--surface);color:var(--text);box-shadow:var(--shadow)}
+
+/* ── screens ── */
+.screen{display:none}.screen.active{display:block}
+
+/* ── card ── */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.25rem;margin-bottom:1rem;box-shadow:var(--shadow)}
+.card-title{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:1rem}
+
+/* ── form ── */
+.field{margin-bottom:.875rem}.field:last-child{margin-bottom:0}
+label{display:block;font-size:13px;font-weight:500;color:var(--text2);margin-bottom:5px}
+input[type=text],input[type=number],input[type=datetime-local],select,textarea{
+  width:100%;padding:9px 12px;border:1px solid var(--border2);border-radius:var(--radius);
+  background:var(--surface);color:var(--text);font-size:14px;font-family:inherit;
+  transition:border-color .15s,box-shadow .15s;outline:none}
+input:focus,select:focus,textarea:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(22,163,74,.15)}
+textarea{height:72px;resize:vertical}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.row3{display:grid;grid-template-columns:1fr 1fr 80px;gap:10px}
+
+/* ── buttons ── */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:9px 16px;
+  border-radius:var(--radius);font-size:13px;font-weight:500;cursor:pointer;border:none;
+  transition:all .15s;font-family:inherit;white-space:nowrap}
+.btn-green{background:var(--green);color:#fff}.btn-green:hover{background:var(--green-d)}
+.btn-outline{background:transparent;color:var(--text);border:1px solid var(--border2)}.btn-outline:hover{background:var(--s2)}
+.btn-red{background:var(--red);color:#fff}.btn-red:hover{background:#b91c1c}
+.btn-blue{background:var(--blue);color:#fff}.btn-blue:hover{background:#1d4ed8}
+.btn-full{width:100%}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn:active:not(:disabled){transform:scale(.98)}
+.btn-row{display:flex;gap:8px}.btn-row .btn{flex:1}
+
+/* ── bolão list ── */
+.bolao-list{display:flex;flex-direction:column;gap:8px}
+.bolao-item{background:var(--surface);border:1px solid var(--border);border-radius:12px;
+  padding:1rem 1.25rem;display:flex;align-items:center;justify-content:space-between;
+  cursor:pointer;transition:all .15s;box-shadow:var(--shadow)}
+.bolao-item:hover{border-color:var(--border2);transform:translateY(-1px)}
+.bi-left{display:flex;align-items:center;gap:12px}
+.b-icon{width:40px;height:40px;border-radius:9px;background:var(--green-bg);
+  display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.b-nome{font-size:14px;font-weight:600}
+.b-meta{font-size:12px;color:var(--text3);margin-top:2px}
+
+/* ── badge ── */
+.badge{display:inline-flex;align-items:center;gap:3px;padding:3px 9px;border-radius:99px;font-size:11px;font-weight:600;white-space:nowrap}
+.ba{background:var(--green-bg);color:var(--green-d)}
+.be{background:var(--red-bg);color:var(--red)}
+
+/* ── partida card ── */
+.partida-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;
+  padding:1rem 1.25rem;margin-bottom:10px;box-shadow:var(--shadow)}
+.partida-card.enc{opacity:.75;border-color:var(--border)}
+.partida-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem}
+.partida-titulo{font-size:14px;font-weight:700;display:flex;align-items:center;gap:8px}
+.partida-meta{font-size:11px;color:var(--text3)}
+.palpite-btns{display:grid;grid-template-columns:1fr auto 1fr;gap:6px;align-items:center;margin-top:.5rem}
+.palpite-btns .vs{font-size:11px;font-weight:700;color:var(--text3);text-align:center}
+.pbtn{padding:9px 10px;border:1.5px solid var(--border2);border-radius:var(--radius);
+  background:var(--s1);cursor:pointer;font-size:13px;font-weight:500;
+  transition:all .15s;text-align:center;font-family:inherit;width:100%}
+.pbtn:hover{border-color:var(--border2);background:var(--surface)}
+.pbtn.selected-casa{border-color:var(--green);background:var(--green-bg);color:var(--green-deep)}
+.pbtn.selected-visitante{border-color:var(--blue);background:var(--blue-bg);color:#1e3a8a}
+.pbtn.selected-empate{border-color:var(--yellow);background:var(--yellow-bg);color:#78350f}
+.pbtn-empate{border-color:var(--border2);font-size:12px;padding:9px 6px}
+.pbtn-empate.selected-empate{border-color:var(--yellow);background:var(--yellow-bg);color:#78350f}
+.resultado-label{font-size:12px;font-weight:600;padding:5px 10px;border-radius:var(--radius);text-align:center}
+.res-casa{background:var(--green-bg);color:var(--green-deep)}
+.res-visitante{background:var(--blue-bg);color:#1e3a8a}
+.res-empate{background:var(--yellow-bg);color:#78350f}
+.acertou{font-size:11px;color:var(--green);font-weight:600;display:flex;align-items:center;gap:3px}
+.errou{font-size:11px;color:var(--red);font-weight:600}
+
+/* ── admin resultado btns ── */
+.res-btns{display:grid;grid-template-columns:1fr auto 1fr;gap:6px;align-items:center;margin-top:.5rem}
+.rbtn{padding:8px 8px;border:1.5px solid var(--border2);border-radius:var(--radius);
+  background:var(--s1);cursor:pointer;font-size:12px;font-weight:600;
+  transition:all .15s;font-family:inherit;width:100%}
+.rbtn:hover{background:var(--s2)}
+.rbtn-casa:hover{border-color:var(--green);color:var(--green-d)}
+.rbtn-vis:hover{border-color:var(--blue);color:var(--blue)}
+.rbtn-emp{font-size:11px}
+.rbtn-emp:hover{border-color:var(--yellow);color:var(--yellow)}
+
+/* ── ranking ── */
+.ranking-table{width:100%;border-collapse:collapse;font-size:13px}
+.ranking-table th{padding:10px 12px;text-align:left;font-size:11px;font-weight:600;
+  color:var(--text3);text-transform:uppercase;letter-spacing:.05em;
+  border-bottom:2px solid var(--border)}
+.ranking-table td{padding:11px 12px;border-bottom:1px solid var(--border);vertical-align:middle}
+.ranking-table tr:last-child td{border-bottom:none}
+.ranking-table tr:hover td{background:var(--s1)}
+.pos{font-size:13px;font-weight:700;color:var(--text3);min-width:28px}
+.pos-1{color:#d97706}.pos-2{color:#6b7280}.pos-3{color:#92400e}
+.medal{font-size:18px}
+.rk-nome{font-weight:600;color:var(--text)}
+.rk-pts{font-size:16px;font-weight:700;color:var(--green)}
+.rk-acertos{font-size:12px;color:var(--text2)}
+
+/* ── stats ── */
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:1rem}
+.stat{background:var(--s1);border-radius:var(--radius);padding:12px;text-align:center}
+.stat-val{font-size:22px;font-weight:700}.stat-lbl{font-size:11px;color:var(--text3);margin-top:2px}
+
+/* ── code box ── */
+.code-box{background:var(--green-bg);border:2px dashed var(--green-b);border-radius:12px;
+  padding:1.5rem;text-align:center;margin-bottom:1rem}
+.code-lbl{font-size:11px;font-weight:600;color:var(--green-deep);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px}
+.code-val{font-size:38px;font-weight:800;letter-spacing:.18em;color:var(--green-deep);font-family:ui-monospace,monospace}
+.code-hint{font-size:12px;color:var(--green-d);margin-top:5px}
+
+/* ── misc ── */
+.back-btn{background:none;border:none;color:var(--text2);font-size:13px;cursor:pointer;
+  display:flex;align-items:center;gap:5px;padding:4px 0;margin-bottom:1rem}
+.back-btn:hover{color:var(--text)}
+.empty{text-align:center;padding:2.5rem 1rem;color:var(--text3)}
+.empty .ei{font-size:44px;margin-bottom:10px}
+.empty p{font-size:14px}
+.loading{text-align:center;padding:2rem;color:var(--text3);font-size:14px}
+#toast{position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);
+  background:#1f2937;color:#fff;padding:10px 22px;border-radius:99px;
+  font-size:13px;font-weight:500;pointer-events:none;opacity:0;
+  transition:opacity .2s;z-index:999;white-space:nowrap}
+#toast.show{opacity:1}
+#toast.err{background:var(--red)}
+.sep{border:none;border-top:1px solid var(--border);margin:1rem 0}
+.pts-badge{display:inline-block;background:var(--yellow-bg);color:var(--yellow);
+  border:1px solid var(--yellow-b);border-radius:99px;font-size:11px;font-weight:600;padding:2px 8px;margin-left:6px}
+.section-label{font-size:12px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px;margin-top:1.25rem}
+.palpites-resumo{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px;font-size:12px}
+.pr-item{display:flex;align-items:center;gap:4px}
+.dot{width:8px;height:8px;border-radius:50%;display:inline-block}
+.dot-g{background:var(--green)}.dot-b{background:var(--blue)}.dot-y{background:var(--yellow)}
+
+@media(max-width:540px){
+  .row2,.row3{grid-template-columns:1fr}
+  .stats{grid-template-columns:1fr 1fr 1fr}
+  .code-val{font-size:28px}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="hinner">
+    <div class="logo">🏆</div>
+    <div class="brand">Bolão<span>App</span></div>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <div class="tabs">
+    <button class="tab active" onclick="goto('criar',this)">➕ Criar bolão</button>
+    <button class="tab" onclick="goto('entrar',this)">🎯 Participar</button>
+    <button class="tab" onclick="goto('meus',this)">📋 Meus bolões</button>
+  </div>
+
+  <!-- ══ CRIAR ══ -->
+  <div id="screen-criar" class="screen active">
+    <div id="form-criar">
+      <div class="card">
+        <div class="card-title">Novo bolão</div>
+        <div class="field"><label>Nome *</label><input type="text" id="c-nome" placeholder="Ex: Copa do Mundo 2026" maxlength="80"/></div>
+        <div class="field"><label>Descrição</label><textarea id="c-desc" placeholder="Descreva o bolão para os participantes…"></textarea></div>
+        <button class="btn btn-green btn-full" id="btn-criar" onclick="criarBolao()">Criar bolão</button>
+      </div>
+    </div>
+
+    <div id="sucesso-criar" style="display:none">
+      <div class="code-box">
+        <div class="code-lbl">Código do bolão</div>
+        <div class="code-val" id="codigo-gerado">—</div>
+        <div class="code-hint">Compartilhe com os participantes</div>
+      </div>
+      <div class="card" id="resumo-card"></div>
+      <div class="btn-row">
+        <button class="btn btn-outline" onclick="copiarCodigo()">📋 Copiar código</button>
+        <button class="btn btn-green" onclick="irParaAdmin()">⚙️ Gerenciar bolão</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ PARTICIPAR ══ -->
+  <div id="screen-entrar" class="screen">
+    <!-- passo 1: buscar -->
+    <div id="passo-buscar">
+      <div class="card">
+        <div class="card-title">Código do bolão</div>
+        <div style="display:flex;gap:8px">
+          <input type="text" id="e-codigo" placeholder="Ex: AB3K7F"
+            style="flex:1;text-transform:uppercase;letter-spacing:.1em;font-family:monospace;font-size:16px"
+            maxlength="6" oninput="this.value=this.value.toUpperCase()"
+            onkeydown="if(event.key==='Enter')buscarParaEntrar()"/>
+          <button class="btn btn-green" onclick="buscarParaEntrar()">Buscar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- passo 2: entrar com nome -->
+    <div id="passo-nome" style="display:none">
+      <button class="back-btn" onclick="voltarBusca()">← Voltar</button>
+      <div class="card" id="card-bolao-info"></div>
+      <div class="card">
+        <div class="card-title">Seu nome no bolão</div>
+        <div class="field"><input type="text" id="e-nome" placeholder="Como quer aparecer no ranking"/></div>
+        <button class="btn btn-green btn-full" onclick="entrarNoBolao()">Entrar no bolão</button>
+      </div>
+    </div>
+
+    <!-- passo 3: fazer palpites -->
+    <div id="passo-palpites" style="display:none">
+      <button class="back-btn" onclick="voltarBusca()">← Sair</button>
+      <div id="palpites-header" class="card"></div>
+      <div id="palpites-lista"></div>
+    </div>
+  </div>
+
+  <!-- ══ MEUS BOLÕES ══ -->
+  <div id="screen-meus" class="screen">
+    <div id="lista-wrap">
+      <div id="lista-content" class="loading">Carregando…</div>
+    </div>
+    <!-- detalhe admin -->
+    <div id="detalhe-wrap" style="display:none">
+      <button class="back-btn" onclick="voltarLista()">← Voltar</button>
+      <div id="detalhe-content"></div>
+    </div>
+  </div>
+
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ── estado ────────────────────────────────────────────────────────────────────
+let codigoBuscado = null;
+let nomeParticipante = null;
+
+// ── helpers ───────────────────────────────────────────────────────────────────
+function goto(name, el) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('screen-' + name).classList.add('active');
+  if (el) el.classList.add('active');
+  if (name === 'meus') carregarLista();
+}
+
+function toast(msg, tipo='') {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.className = 'show' + (tipo ? ' '+tipo : '');
+  clearTimeout(t._t); t._t = setTimeout(() => t.className='', 2800);
+}
+
+async function api(url, method='GET', body=null) {
+  const opts = { method, headers: {'Content-Type':'application/json'} };
+  if (body) opts.body = JSON.stringify(body);
+  const r = await fetch(url, opts);
+  const d = await r.json();
+  if (!r.ok) throw new Error(d.erro || 'Erro desconhecido');
+  return d;
+}
+
+function resLabel(res, casa, vis) {
+  if (!res) return '';
+  if (res==='casa') return `<span class="resultado-label res-casa">🏠 ${casa}</span>`;
+  if (res==='visitante') return `<span class="resultado-label res-visitante">✈️ ${vis}</span>`;
+  return `<span class="resultado-label res-empate">🤝 Empate</span>`;
+}
+
+function palpiteLabel(p) {
+  if (!p) return '';
+  if (p==='casa') return '<span style="color:var(--green);font-weight:600">🏠 Casa</span>';
+  if (p==='visitante') return '<span style="color:var(--blue);font-weight:600">✈️ Visitante</span>';
+  return '<span style="color:var(--yellow);font-weight:600">🤝 Empate</span>';
+}
+
+// ── CRIAR ─────────────────────────────────────────────────────────────────────
+async function criarBolao() {
+  const nome = document.getElementById('c-nome').value.trim();
+  if (!nome) { toast('Adicione um nome.', 'err'); return; }
+  const btn = document.getElementById('btn-criar');
+  btn.disabled = true; btn.textContent = 'Criando…';
+  try {
+    const d = await api('/api/boloes', 'POST', {
+      nome, descricao: document.getElementById('c-desc').value.trim()
+    });
+    document.getElementById('codigo-gerado').textContent = d.codigo;
+    document.getElementById('resumo-card').innerHTML =
+      `<div class="card-title">Resumo</div><div style="font-size:14px;line-height:1.9"><b>${nome}</b></div>`;
+    document.getElementById('form-criar').style.display = 'none';
+    document.getElementById('sucesso-criar').style.display = 'block';
+    window._codigoCriado = d.codigo;
+  } catch(e) { toast(e.message,'err'); }
+  finally { btn.disabled=false; btn.textContent='Criar bolão'; }
+}
+
+function copiarCodigo() {
+  navigator.clipboard.writeText(document.getElementById('codigo-gerado').textContent)
+    .then(() => toast('Código copiado!'));
+}
+
+function irParaAdmin() {
+  document.getElementById('form-criar').style.display = 'block';
+  document.getElementById('sucesso-criar').style.display = 'none';
+  document.getElementById('c-nome').value = '';
+  document.getElementById('c-desc').value = '';
+  // vai para meus bolões
+  document.querySelectorAll('.tab')[2].click();
+  setTimeout(() => abrirDetalhe(window._codigoCriado), 300);
+}
+
+// ── PARTICIPAR ────────────────────────────────────────────────────────────────
+async function buscarParaEntrar() {
+  const codigo = document.getElementById('e-codigo').value.trim().toUpperCase();
+  if (codigo.length < 4) { toast('Digite um código válido.', 'err'); return; }
+  try {
+    const b = await api('/api/boloes/' + codigo);
+    codigoBuscado = codigo;
+    document.getElementById('card-bolao-info').innerHTML = `
+      <div class="card-title">Bolão encontrado</div>
+      <div style="font-size:15px;font-weight:700;margin-bottom:4px">${b.nome}</div>
+      ${b.descricao ? `<div style="font-size:13px;color:var(--text2);margin-bottom:6px">${b.descricao}</div>` : ''}
+      <div style="font-size:12px;color:var(--text3)">${b.total_participantes} participante(s) · ${b.total_partidas} partida(s)</div>`;
+    document.getElementById('passo-buscar').style.display = 'none';
+    document.getElementById('passo-nome').style.display = 'block';
+    document.getElementById('passo-palpites').style.display = 'none';
+  } catch(e) { toast(e.message,'err'); }
+}
+
+async function entrarNoBolao() {
+  const nome = document.getElementById('e-nome').value.trim();
+  if (!nome) { toast('Digite seu nome.', 'err'); return; }
+  try {
+    await api(`/api/boloes/${codigoBuscado}/entrar`, 'POST', { nome });
+    nomeParticipante = nome;
+    toast(`Bem-vindo, ${nome}!`);
+    await carregarPalpites();
+  } catch(e) {
+    // se já está no bolão, entra direto
+    if (e.message.includes('já está')) {
+      nomeParticipante = nome;
+      await carregarPalpites();
+    } else { toast(e.message, 'err'); }
+  }
+}
+
+async function carregarPalpites() {
+  document.getElementById('passo-nome').style.display = 'none';
+  document.getElementById('passo-palpites').style.display = 'block';
+  document.getElementById('palpites-header').innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:space-between">
+      <div>
+        <div style="font-size:15px;font-weight:700">${codigoBuscado}</div>
+        <div style="font-size:12px;color:var(--text3)">Participando como: <b style="color:var(--text)">${nomeParticipante}</b></div>
+      </div>
+      <button class="btn btn-outline" style="font-size:12px" onclick="verRankingParticipante()">🏅 Ranking</button>
+    </div>`;
+  const lista = document.getElementById('palpites-lista');
+  lista.innerHTML = '<div class="loading">Carregando partidas…</div>';
+  try {
+    const partidas = await api(`/api/boloes/${codigoBuscado}/partidas?participante=${encodeURIComponent(nomeParticipante)}`);
+    if (!partidas.length) {
+      lista.innerHTML = '<div class="empty"><div class="ei">⚽</div><p>Nenhuma partida cadastrada ainda.<br>Aguarde o administrador adicionar.</p></div>';
+      return;
+    }
+    lista.innerHTML = partidas.map(p => renderPartidaParticipante(p)).join('');
+  } catch(e) { lista.innerHTML = '<div class="loading">Erro ao carregar.</div>'; }
+}
+
+function renderPartidaParticipante(p) {
+  const meu = p.meu_palpite;
+  if (p.encerrada) {
+    const acertou = meu && meu === p.resultado;
+    const errou = meu && meu !== p.resultado;
+    return `<div class="partida-card enc">
+      <div class="partida-head">
+        <div class="partida-titulo">
+          ${p.casa} <span style="color:var(--text3);font-weight:400">×</span> ${p.visitante}
+          <span class="pts-badge">+${p.pontos}pts</span>
+        </div>
+        ${p.data ? `<div class="partida-meta">${p.data}</div>` : ''}
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+        <div style="font-size:13px;color:var(--text2)">
+          Resultado: ${resLabel(p.resultado, p.casa, p.visitante)}
+        </div>
+        <div>
+          ${meu ? `Seu palpite: ${palpiteLabel(meu)}` : '<span style="font-size:12px;color:var(--text3)">Sem palpite</span>'}
+        </div>
+        ${acertou ? '<div class="acertou">✅ Acertou! +'+p.pontos+' pts</div>' : ''}
+        ${errou   ? '<div class="errou">❌ Errou</div>' : ''}
+      </div>
+    </div>`;
+  }
+
+  const cssCasa = meu==='casa' ? 'pbtn selected-casa' : 'pbtn';
+  const cssVis  = meu==='visitante' ? 'pbtn selected-visitante' : 'pbtn';
+  const cssEmp  = meu==='empate' ? 'pbtn-empate selected-empate pbtn' : 'pbtn-empate pbtn';
+  return `<div class="partida-card" id="pc-${p.id}">
+    <div class="partida-head">
+      <div class="partida-titulo">
+        ${p.casa} <span style="color:var(--text3);font-weight:400">×</span> ${p.visitante}
+        <span class="pts-badge">+${p.pontos}pts</span>
+      </div>
+      ${p.data ? `<div class="partida-meta">${p.data}</div>` : ''}
+    </div>
+    ${meu ? `<div style="font-size:12px;color:var(--text2);margin-bottom:6px">Seu palpite: ${palpiteLabel(meu)}</div>` : ''}
+    <div class="palpite-btns">
+      <button class="${cssCasa}" onclick="palpitar('${p.id}','casa')">${p.casa}</button>
+      <button class="${cssEmp}" onclick="palpitar('${p.id}','empate')">Empate</button>
+      <button class="${cssVis}" onclick="palpitar('${p.id}','visitante')">${p.visitante}</button>
+    </div>
+    <div style="font-size:11px;color:var(--text3);margin-top:6px;text-align:right">${p.total_palpites} palpite(s)</div>
+  </div>`;
+}
+
+async function palpitar(pid, palpite) {
+  try {
+    await api(`/api/boloes/${codigoBuscado}/partidas/${pid}/palpite`, 'POST',
+      { nome: nomeParticipante, palpite });
+    toast('Palpite salvo!');
+    await carregarPalpites();
+  } catch(e) { toast(e.message, 'err'); }
+}
+
+async function verRankingParticipante() {
+  try {
+    const ranking = await api(`/api/boloes/${codigoBuscado}/ranking`);
+    mostrarModalRanking(ranking);
+  } catch(e) { toast(e.message,'err'); }
+}
+
+function mostrarModalRanking(ranking) {
+  const medals = ['🥇','🥈','🥉'];
+  const rows = ranking.map((r,i) => {
+    const destaque = r.nome === nomeParticipante ? 'style="background:var(--green-bg)"' : '';
+    const med = i < 3 ? medals[i] : '';
+    return `<tr ${destaque}>
+      <td><span class="pos pos-${i+1}">${med || (i+1)+'º'}</span></td>
+      <td class="rk-nome">${r.nome}${r.nome===nomeParticipante?' <span style="font-size:11px;color:var(--green)">(você)</span>':''}</td>
+      <td class="rk-pts">${r.pontos}</td>
+      <td class="rk-acertos" style="text-align:right">${r.acertos}/${r.palpites}</td>
+    </tr>`;
+  }).join('');
+  const html = `<div style="position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;display:flex;align-items:center;justify-content:center;padding:1rem" onclick="if(event.target===this)this.remove()">
+    <div style="background:var(--surface);border-radius:16px;padding:1.5rem;width:100%;max-width:400px;max-height:80vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.2)">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">
+        <div style="font-size:16px;font-weight:700">🏆 Classificação</div>
+        <button onclick="this.closest('div[style*=fixed]').remove()" style="background:none;border:none;font-size:18px;cursor:pointer;color:var(--text3)">✕</button>
+      </div>
+      <table class="ranking-table">
+        <thead><tr><th>#</th><th>Participante</th><th>Pts</th><th style="text-align:right">Acertos</th></tr></thead>
+        <tbody>${rows || '<tr><td colspan="4" class="loading">Sem dados ainda.</td></tr>'}</tbody>
+      </table>
+    </div>
+  </div>`;
+  document.body.insertAdjacentHTML('beforeend', html);
+}
+
+function voltarBusca() {
+  codigoBuscado = null; nomeParticipante = null;
+  document.getElementById('passo-buscar').style.display = 'block';
+  document.getElementById('passo-nome').style.display = 'none';
+  document.getElementById('passo-palpites').style.display = 'none';
+  document.getElementById('e-codigo').value = '';
+  document.getElementById('e-nome').value = '';
+}
+
+// ── MEUS BOLÕES / ADMIN ───────────────────────────────────────────────────────
+async function carregarLista() {
+  document.getElementById('detalhe-wrap').style.display = 'none';
+  document.getElementById('lista-wrap').style.display = 'block';
+  document.getElementById('lista-content').innerHTML = '<div class="loading">Carregando…</div>';
+  try {
+    const list = await api('/api/boloes');
+    if (!list.length) {
+      document.getElementById('lista-content').innerHTML = `
+        <div class="empty"><div class="ei">🏆</div><p>Nenhum bolão criado ainda.<br>Crie um na aba "Criar bolão".</p></div>`;
+      return;
+    }
+    document.getElementById('lista-content').innerHTML = `<div class="bolao-list">
+      ${list.map(b => `
+        <div class="bolao-item" onclick="abrirDetalhe('${b.codigo}')">
+          <div class="bi-left">
+            <div class="b-icon">🏆</div>
+            <div>
+              <div class="b-nome">${b.nome}</div>
+              <div class="b-meta">${b.codigo} · ${b.total_participantes} participante(s) · ${b.total_partidas} partida(s)</div>
+            </div>
+          </div>
+          <span class="badge ${b.encerrado?'be':'ba'}">${b.encerrado?'Encerrado':'Aberto'}</span>
+        </div>`).join('')}
+    </div>`;
+  } catch(e) { document.getElementById('lista-content').innerHTML='<div class="loading">Erro.</div>'; }
+}
+
+async function abrirDetalhe(codigo) {
+  document.getElementById('lista-wrap').style.display = 'none';
+  document.getElementById('detalhe-wrap').style.display = 'block';
+  document.getElementById('detalhe-content').innerHTML = '<div class="loading">Carregando…</div>';
+  await renderAdmin(codigo);
+}
+
+async function renderAdmin(codigo) {
+  try {
+    const [b, partidas, ranking] = await Promise.all([
+      api('/api/boloes/' + codigo),
+      api('/api/boloes/' + codigo + '/partidas'),
+      api('/api/boloes/' + codigo + '/ranking'),
+    ]);
+    window._adminCodigo = codigo;
+
+    const medals = ['🥇','🥈','🥉'];
+    const rankRows = ranking.map((r,i) => `
+      <tr>
+        <td><span class="pos pos-${i+1}">${i<3?medals[i]:(i+1)+'º'}</span></td>
+        <td class="rk-nome">${r.nome}</td>
+        <td class="rk-pts">${r.pontos}</td>
+        <td class="rk-acertos" style="text-align:right">${r.acertos}/${r.palpites}</td>
+      </tr>`).join('');
+
+    const partidasHtml = partidas.length
+      ? partidas.map(p => renderPartidaAdmin(p, b)).join('')
+      : '<div class="empty"><div class="ei">⚽</div><p>Nenhuma partida ainda.</p></div>';
+
+    document.getElementById('detalhe-content').innerHTML = `
+      <!-- info -->
+      <div class="card">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px">
+          <div>
+            <div style="font-size:17px;font-weight:700;margin-bottom:2px">${b.nome}</div>
+            ${b.descricao?`<div style="font-size:13px;color:var(--text2)">${b.descricao}</div>`:''}
+            <div style="font-size:12px;color:var(--text3);margin-top:4px">Código: <b style="font-family:monospace;letter-spacing:.08em">${codigo}</b></div>
+          </div>
+          <div style="display:flex;gap:6px;flex-shrink:0">
+            <button class="btn btn-outline" style="font-size:12px;padding:6px 10px" onclick="copiarCodigoAdmin('${codigo}')">📋 Copiar</button>
+            <button class="btn btn-red" style="font-size:12px;padding:6px 10px" onclick="deletarBolao('${codigo}')">🗑️</button>
+          </div>
+        </div>
+        <div class="stats" style="margin-top:1rem;margin-bottom:0">
+          <div class="stat"><div class="stat-val">${b.total_participantes}</div><div class="stat-lbl">Participantes</div></div>
+          <div class="stat"><div class="stat-val">${b.total_partidas}</div><div class="stat-lbl">Partidas</div></div>
+          <div class="stat"><div class="stat-val">${b.partidas_encerradas}</div><div class="stat-lbl">Encerradas</div></div>
+        </div>
+      </div>
+
+      <!-- adicionar partida -->
+      <div class="card">
+        <div class="card-title">Adicionar partida</div>
+        <div class="row2">
+          <div class="field"><label>Time da casa *</label><input type="text" id="p-casa" placeholder="Ex: Brasil"/></div>
+          <div class="field"><label>Time visitante *</label><input type="text" id="p-vis" placeholder="Ex: Argentina"/></div>
+        </div>
+        <div class="row2">
+          <div class="field"><label>Data / hora</label><input type="datetime-local" id="p-data"/></div>
+          <div class="field"><label>Pontos pelo acerto</label><input type="number" id="p-pontos" value="1" min="1" max="99"/></div>
+        </div>
+        <button class="btn btn-green" onclick="adicionarPartida()">➕ Adicionar partida</button>
+      </div>
+
+      <!-- partidas -->
+      <div class="section-label" style="margin-top:0">Partidas</div>
+      <div id="partidas-admin">${partidasHtml}</div>
+
+      <!-- ranking -->
+      <div class="section-label">🏆 Classificação</div>
+      <div class="card" style="padding:0;overflow:hidden">
+        <table class="ranking-table">
+          <thead><tr><th>#</th><th>Participante</th><th>Pontos</th><th style="text-align:right">Acertos</th></tr></thead>
+          <tbody id="ranking-body">${rankRows || '<tr><td colspan="4" class="loading">Sem palpites ainda.</td></tr>'}</tbody>
+        </table>
+      </div>`;
+  } catch(e) {
+    document.getElementById('detalhe-content').innerHTML = '<div class="loading">Erro ao carregar.</div>';
+  }
+}
+
+function renderPartidaAdmin(p, b) {
+  const dataFmt = p.data ? new Date(p.data).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) : '';
+  if (p.encerrada) {
+    return `<div class="partida-card enc">
+      <div class="partida-head">
+        <div class="partida-titulo">
+          ${p.casa} × ${p.visitante}
+          <span class="pts-badge">+${p.pontos}pts</span>
+        </div>
+        ${dataFmt?`<div class="partida-meta">${dataFmt}</div>`:''}
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+        ${resLabel(p.resultado, p.casa, p.visitante)}
+        <div style="font-size:12px;color:var(--text3)">${p.total_palpites} palpite(s)</div>
+      </div>
+    </div>`;
+  }
+  return `<div class="partida-card" id="pa-${p.id}">
+    <div class="partida-head">
+      <div class="partida-titulo">
+        ${p.casa} × ${p.visitante}
+        <span class="pts-badge">+${p.pontos}pts</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        ${dataFmt?`<div class="partida-meta">${dataFmt}</div>`:''}
+        <button class="btn btn-red" style="font-size:11px;padding:5px 9px" onclick="deletarPartida('${p.id}')">🗑️</button>
+      </div>
+    </div>
+    <div style="font-size:12px;color:var(--text2);margin-bottom:6px">${p.total_palpites} palpite(s) registrado(s)</div>
+    <div style="font-size:12px;font-weight:600;color:var(--text3);margin-bottom:6px">Definir resultado:</div>
+    <div class="res-btns">
+      <button class="rbtn rbtn-casa" onclick="definirResultado('${p.id}','casa')">${p.casa}</button>
+      <button class="rbtn rbtn-emp" onclick="definirResultado('${p.id}','empate')">Empate</button>
+      <button class="rbtn rbtn-vis" onclick="definirResultado('${p.id}','visitante')">${p.visitante}</button>
+    </div>
+  </div>`;
+}
+
+async function adicionarPartida() {
+  const casa = document.getElementById('p-casa').value.trim();
+  const vis  = document.getElementById('p-vis').value.trim();
+  const data = document.getElementById('p-data').value || '';
+  const pts  = parseInt(document.getElementById('p-pontos').value) || 1;
+  if (!casa || !vis) { toast('Informe os dois times.','err'); return; }
+  try {
+    await api(`/api/boloes/${window._adminCodigo}/partidas`, 'POST',
+      { casa, visitante: vis, data, pontos: pts });
+    toast('Partida adicionada!');
+    document.getElementById('p-casa').value = '';
+    document.getElementById('p-vis').value  = '';
+    document.getElementById('p-data').value = '';
+    document.getElementById('p-pontos').value = '1';
+    await renderAdmin(window._adminCodigo);
+  } catch(e) { toast(e.message,'err'); }
+}
+
+async function definirResultado(pid, resultado) {
+  const labels = {casa:'Casa vence',visitante:'Visitante vence',empate:'Empate'};
+  if (!confirm(`Confirmar resultado: ${labels[resultado]}?`)) return;
+  try {
+    await api(`/api/boloes/${window._adminCodigo}/partidas/${pid}/resultado`, 'POST', { resultado });
+    toast('Resultado registrado!');
+    await renderAdmin(window._adminCodigo);
+  } catch(e) { toast(e.message,'err'); }
+}
+
+async function deletarPartida(pid) {
+  if (!confirm('Deletar esta partida?')) return;
+  try {
+    await api(`/api/boloes/${window._adminCodigo}/partidas/${pid}`, 'DELETE');
+    toast('Partida removida.');
+    await renderAdmin(window._adminCodigo);
+  } catch(e) { toast(e.message,'err'); }
+}
+
+async function deletarBolao(codigo) {
+  if (!confirm(`Deletar o bolão ${codigo}? Esta ação não pode ser desfeita.`)) return;
+  try {
+    await api(`/api/boloes/${codigo}`, 'DELETE');
+    toast('Bolão deletado.');
+    voltarLista();
+  } catch(e) { toast(e.message,'err'); }
+}
+
+function copiarCodigoAdmin(cod) {
+  navigator.clipboard.writeText(cod).then(()=>toast('Código copiado!'));
+}
+
+function voltarLista() { carregarLista(); }
+</script>
+</body>
+</html>
