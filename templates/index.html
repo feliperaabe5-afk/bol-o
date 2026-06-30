@@ -43,7 +43,7 @@ header{background:var(--surface);border-bottom:1px solid var(--border);position:
 /* ── form ── */
 .field{margin-bottom:.875rem}.field:last-child{margin-bottom:0}
 label{display:block;font-size:13px;font-weight:500;color:var(--text2);margin-bottom:5px}
-input[type=text],input[type=number],input[type=datetime-local],select,textarea{
+input[type=text],input[type=password],input[type=number],input[type=datetime-local],select,textarea{
   width:100%;padding:9px 12px;border:1px solid var(--border2);border-radius:var(--radius);
   background:var(--surface);color:var(--text);font-size:14px;font-family:inherit;
   transition:border-color .15s,box-shadow .15s;outline:none}
@@ -117,6 +117,10 @@ textarea{height:72px;resize:vertical}
 .rbtn-vis:hover{border-color:var(--blue);color:var(--blue)}
 .rbtn-emp{font-size:11px}
 .rbtn-emp:hover{border-color:var(--yellow);color:var(--yellow)}
+.rbtn.ativo{border-width:2px;font-weight:700}
+.rbtn-casa.ativo{border-color:var(--green);color:var(--green-d);background:var(--s2)}
+.rbtn-vis.ativo{border-color:var(--blue);color:var(--blue);background:var(--s2)}
+.rbtn-emp.ativo{border-color:var(--yellow);color:var(--yellow);background:var(--s2)}
 
 /* ── ranking ── */
 .ranking-table{width:100%;border-collapse:collapse;font-size:13px}
@@ -173,14 +177,73 @@ textarea{height:72px;resize:vertical}
   .stats{grid-template-columns:1fr 1fr 1fr}
   .code-val{font-size:28px}
 }
+
+/* ── auth screen ── */
+#auth-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:1.5rem}
+.auth-box{width:100%;max-width:360px}
+.auth-logo{text-align:center;margin-bottom:1.5rem}
+.auth-logo .al-icon{font-size:42px;margin-bottom:6px}
+.auth-logo .al-title{font-size:20px;font-weight:700}
+.auth-logo .al-title span{color:var(--green)}
+.auth-tabs{display:flex;gap:4px;background:var(--s2);border:1px solid var(--border);border-radius:10px;padding:4px;margin-bottom:1.25rem}
+.auth-tab{flex:1;padding:8px 0;border:none;border-radius:6px;background:transparent;color:var(--text2);font-size:13px;font-weight:600;cursor:pointer;transition:all .15s}
+.auth-tab.active{background:var(--surface);color:var(--text);box-shadow:var(--shadow)}
+.auth-error{background:var(--red-bg);color:var(--red);border:1px solid var(--red-b);border-radius:var(--radius);padding:9px 12px;font-size:13px;margin-bottom:.875rem;display:none}
+.auth-error.show{display:block}
+.user-chip{display:flex;align-items:center;gap:8px;margin-left:auto;font-size:13px}
+.user-chip .uc-name{font-weight:600;color:var(--text)}
+.user-chip .uc-avatar{width:26px;height:26px;border-radius:50%;background:var(--green-bg);color:var(--green-deep);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700}
+.logout-btn{background:none;border:none;color:var(--text3);font-size:12px;cursor:pointer;padding:4px 6px}
+.logout-btn:hover{color:var(--red)}
+.part-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)}
+.part-row:last-child{border-bottom:none}
+.part-row .pr-nome{font-size:13px;color:var(--text2)}
+.part-del{background:none;border:none;color:var(--text3);cursor:pointer;font-size:13px;padding:4px 8px;border-radius:6px;transition:all .15s}
+.part-del:hover{color:var(--red);background:var(--red-bg)}
 </style>
 </head>
 <body>
 
+<!-- ══ AUTENTICAÇÃO ══ -->
+<div id="auth-screen">
+  <div class="auth-box">
+    <div class="auth-logo">
+      <div class="al-icon">🏆</div>
+      <div class="al-title">Bolão<span>App</span></div>
+    </div>
+
+    <div class="auth-tabs">
+      <button class="auth-tab active" onclick="authGoto('login',this)">Entrar</button>
+      <button class="auth-tab" onclick="authGoto('cadastro',this)">Criar conta</button>
+    </div>
+
+    <div class="card" id="auth-login">
+      <div class="auth-error" id="login-error"></div>
+      <div class="field"><label>Usuário</label><input type="text" id="login-user" placeholder="seu usuário" onkeydown="if(event.key==='Enter')fazerLogin()"/></div>
+      <div class="field"><label>Senha</label><input type="password" id="login-senha" placeholder="sua senha" onkeydown="if(event.key==='Enter')fazerLogin()"/></div>
+      <button class="btn btn-green btn-full" onclick="fazerLogin()">Entrar</button>
+    </div>
+
+    <div class="card" id="auth-cadastro" style="display:none">
+      <div class="auth-error" id="cadastro-error"></div>
+      <div class="field"><label>Escolha um usuário</label><input type="text" id="cad-user" placeholder="mín. 3 caracteres" maxlength="40"/></div>
+      <div class="field"><label>Crie uma senha</label><input type="password" id="cad-senha" placeholder="mín. 4 caracteres" onkeydown="if(event.key==='Enter')fazerCadastro()"/></div>
+      <button class="btn btn-green btn-full" onclick="fazerCadastro()">Criar conta</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ APP ══ -->
+<div id="app-screen" style="display:none">
 <header>
   <div class="hinner">
     <div class="logo">🏆</div>
     <div class="brand">Bolão<span>App</span></div>
+    <div class="user-chip">
+      <div class="uc-avatar" id="uc-avatar">?</div>
+      <span class="uc-name" id="uc-name">—</span>
+      <button class="logout-btn" onclick="fazerLogout()">Sair</button>
+    </div>
   </div>
 </header>
 
@@ -219,37 +282,31 @@ textarea{height:72px;resize:vertical}
 
   <!-- ══ PARTICIPAR ══ -->
   <div id="screen-entrar" class="screen">
-    <!-- passo 1: buscar -->
-    <div id="passo-buscar">
+
+    <!-- lista de bolões que participo -->
+    <div id="passo-lista-boloes">
       <div class="card">
-        <div class="card-title">Código do bolão</div>
+        <div class="card-title">Entrar em novo bolão</div>
         <div style="display:flex;gap:8px">
           <input type="text" id="e-codigo" placeholder="Ex: AB3K7F"
             style="flex:1;text-transform:uppercase;letter-spacing:.1em;font-family:monospace;font-size:16px"
             maxlength="6" oninput="this.value=this.value.toUpperCase()"
-            onkeydown="if(event.key==='Enter')buscarParaEntrar()"/>
-          <button class="btn btn-green" onclick="buscarParaEntrar()">Buscar</button>
+            onkeydown="if(event.key==='Enter')entrarPorCodigo()"/>
+          <button class="btn btn-green" onclick="entrarPorCodigo()">Entrar</button>
         </div>
       </div>
+
+      <div class="section-label">Bolões que você participa</div>
+      <div id="lista-participando"><div class="loading">Carregando…</div></div>
     </div>
 
-    <!-- passo 2: entrar com nome -->
-    <div id="passo-nome" style="display:none">
-      <button class="back-btn" onclick="voltarBusca()">← Voltar</button>
-      <div class="card" id="card-bolao-info"></div>
-      <div class="card">
-        <div class="card-title">Seu nome no bolão</div>
-        <div class="field"><input type="text" id="e-nome" placeholder="Como quer aparecer no ranking"/></div>
-        <button class="btn btn-green btn-full" onclick="entrarNoBolao()">Entrar no bolão</button>
-      </div>
-    </div>
-
-    <!-- passo 3: fazer palpites -->
+    <!-- palpites de um bolão específico -->
     <div id="passo-palpites" style="display:none">
-      <button class="back-btn" onclick="voltarBusca()">← Sair</button>
+      <button class="back-btn" onclick="voltarListaParticipando()">← Voltar</button>
       <div id="palpites-header" class="card"></div>
       <div id="palpites-lista"></div>
     </div>
+
   </div>
 
   <!-- ══ MEUS BOLÕES ══ -->
@@ -263,6 +320,8 @@ textarea{height:72px;resize:vertical}
       <div id="detalhe-content"></div>
     </div>
   </div>
+
+</div>
 
 </div>
 
@@ -280,6 +339,7 @@ function goto(name, el) {
   document.getElementById('screen-' + name).classList.add('active');
   if (el) el.classList.add('active');
   if (name === 'meus') carregarLista();
+  if (name === 'entrar') carregarListaParticipando();
 }
 
 function toast(msg, tipo='') {
@@ -289,13 +349,72 @@ function toast(msg, tipo='') {
 }
 
 async function api(url, method='GET', body=null) {
-  const opts = { method, headers: {'Content-Type':'application/json'} };
+  const opts = { method, headers: {'Content-Type':'application/json'}, credentials: 'include' };
   if (body) opts.body = JSON.stringify(body);
   const r = await fetch(url, opts);
   const d = await r.json();
   if (!r.ok) throw new Error(d.erro || 'Erro desconhecido');
   return d;
 }
+
+// ── AUTENTICAÇÃO ────────────────────────────────────────────────────────────────
+function authGoto(name, el) {
+  document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('auth-login').style.display = name === 'login' ? 'block' : 'none';
+  document.getElementById('auth-cadastro').style.display = name === 'cadastro' ? 'block' : 'none';
+  document.getElementById('login-error').classList.remove('show');
+  document.getElementById('cadastro-error').classList.remove('show');
+}
+
+function showAuthError(id, msg) {
+  const el = document.getElementById(id);
+  el.textContent = msg;
+  el.classList.add('show');
+}
+
+async function fazerLogin() {
+  const username = document.getElementById('login-user').value.trim();
+  const senha = document.getElementById('login-senha').value;
+  if (!username || !senha) { showAuthError('login-error', 'Preencha usuário e senha.'); return; }
+  try {
+    const d = await api('/api/login', 'POST', { username, senha });
+    entrarNoApp(d.username);
+  } catch(e) { showAuthError('login-error', e.message); }
+}
+
+async function fazerCadastro() {
+  const username = document.getElementById('cad-user').value.trim();
+  const senha = document.getElementById('cad-senha').value;
+  if (!username || !senha) { showAuthError('cadastro-error', 'Preencha usuário e senha.'); return; }
+  try {
+    const d = await api('/api/cadastrar', 'POST', { username, senha });
+    entrarNoApp(d.username);
+  } catch(e) { showAuthError('cadastro-error', e.message); }
+}
+
+async function fazerLogout() {
+  try { await api('/api/logout', 'POST'); } catch(e) {}
+  document.getElementById('app-screen').style.display = 'none';
+  document.getElementById('auth-screen').style.display = 'flex';
+  document.getElementById('login-user').value = '';
+  document.getElementById('login-senha').value = '';
+}
+
+function entrarNoApp(username) {
+  document.getElementById('auth-screen').style.display = 'none';
+  document.getElementById('app-screen').style.display = 'block';
+  document.getElementById('uc-name').textContent = username;
+  document.getElementById('uc-avatar').textContent = username.charAt(0).toUpperCase();
+}
+
+async function bootstrap() {
+  try {
+    const d = await api('/api/eu');
+    if (d.logado) entrarNoApp(d.username);
+  } catch(e) {}
+}
+bootstrap();
 
 function resLabel(res, casa, vis) {
   if (!res) return '';
@@ -309,6 +428,82 @@ function palpiteLabel(p) {
   if (p==='casa') return '<span style="color:var(--green);font-weight:600">🏠 Casa</span>';
   if (p==='visitante') return '<span style="color:var(--blue);font-weight:600">✈️ Visitante</span>';
   return '<span style="color:var(--yellow);font-weight:600">🤝 Empate</span>';
+}
+
+function renderPartidaParticipante(p) {
+  const dataFmt = p.data ? new Date(p.data).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) : '';
+
+  if (p.encerrada) {
+    const acertou = p.meu_palpite && p.resultado && p.meu_palpite === p.resultado;
+    return `<div class="partida-card enc">
+      <div class="partida-head">
+        <div class="partida-titulo">
+          ${p.casa} × ${p.visitante}
+          <span class="pts-badge">+${p.pontos}pts</span>
+        </div>
+        ${dataFmt?`<div class="partida-meta">${dataFmt}</div>`:''}
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+        ${resLabel(p.resultado, p.casa, p.visitante)}
+        <div style="font-size:12px;color:var(--text3)">
+          ${p.meu_palpite ? `Seu palpite: ${palpiteLabel(p.meu_palpite)} ${acertou ? '✅' : '❌'}` : 'Você não palpitou'}
+        </div>
+      </div>
+    </div>`;
+  }
+
+  return `<div class="partida-card" id="pp-${p.id}">
+    <div class="partida-head">
+      <div class="partida-titulo">
+        ${p.casa} × ${p.visitante}
+        <span class="pts-badge">+${p.pontos}pts</span>
+      </div>
+      ${dataFmt?`<div class="partida-meta">${dataFmt}</div>`:''}
+    </div>
+    ${p.meu_palpite ? `<div style="font-size:12px;color:var(--text3);margin-bottom:6px">Seu palpite: ${palpiteLabel(p.meu_palpite)}</div>` : ''}
+    <div class="res-btns">
+      <button class="rbtn rbtn-casa ${p.meu_palpite==='casa'?'ativo':''}" onclick="enviarPalpite('${p.id}','casa')">${p.casa}</button>
+      <button class="rbtn rbtn-emp ${p.meu_palpite==='empate'?'ativo':''}" onclick="enviarPalpite('${p.id}','empate')">Empate</button>
+      <button class="rbtn rbtn-vis ${p.meu_palpite==='visitante'?'ativo':''}" onclick="enviarPalpite('${p.id}','visitante')">${p.visitante}</button>
+    </div>
+  </div>`;
+}
+
+async function enviarPalpite(pid, escolha) {
+  try {
+    await api(`/api/boloes/${codigoBuscado}/partidas/${pid}/palpite`, 'POST',
+      { nome: nomeParticipante, palpite: escolha });
+    toast('Palpite registrado!');
+    await carregarPalpites();
+  } catch(e) {
+    toast(e.message || 'Erro ao registrar palpite.', 'err');
+  }
+}
+
+async function verRankingParticipante() {
+  const lista = document.getElementById('palpites-lista');
+  lista.innerHTML = '<div class="loading">Carregando ranking…</div>';
+  try {
+    const ranking = await api(`/api/boloes/${codigoBuscado}/ranking`);
+    const medals = ['🥇','🥈','🥉'];
+    const rankRows = ranking.map((r,i) => `
+      <tr>
+        <td><span class="pos pos-${i+1}">${i<3?medals[i]:(i+1)+'º'}</span></td>
+        <td class="rk-nome">${r.nome}</td>
+        <td class="rk-pts">${r.pontos}</td>
+        <td class="rk-acertos" style="text-align:right">${r.acertos}/${r.palpites}</td>
+      </tr>`).join('');
+    lista.innerHTML = `
+      <div class="card" style="margin-bottom:10px">
+        <button class="btn btn-outline" style="font-size:12px" onclick="carregarPalpites()">← Voltar</button>
+      </div>
+      <table class="ranking-table">
+        <thead><tr><th></th><th>Nome</th><th>Pontos</th><th style="text-align:right">Acertos</th></tr></thead>
+        <tbody>${rankRows || '<tr><td colspan="4" class="loading">Sem palpites ainda.</td></tr>'}</tbody>
+      </table>`;
+  } catch(e) {
+    lista.innerHTML = '<div class="loading">Erro ao carregar ranking.</div>';
+  }
 }
 
 // ── CRIAR ─────────────────────────────────────────────────────────────────────
@@ -347,43 +542,54 @@ function irParaAdmin() {
 }
 
 // ── PARTICIPAR ────────────────────────────────────────────────────────────────
-async function buscarParaEntrar() {
+async function entrarPorCodigo() {
   const codigo = document.getElementById('e-codigo').value.trim().toUpperCase();
   if (codigo.length < 4) { toast('Digite um código válido.', 'err'); return; }
   try {
     const b = await api('/api/boloes/' + codigo);
-    codigoBuscado = codigo;
-    document.getElementById('card-bolao-info').innerHTML = `
-      <div class="card-title">Bolão encontrado</div>
-      <div style="font-size:15px;font-weight:700;margin-bottom:4px">${b.nome}</div>
-      ${b.descricao ? `<div style="font-size:13px;color:var(--text2);margin-bottom:6px">${b.descricao}</div>` : ''}
-      <div style="font-size:12px;color:var(--text3)">${b.total_participantes} participante(s) · ${b.total_partidas} partida(s)</div>`;
-    document.getElementById('passo-buscar').style.display = 'none';
-    document.getElementById('passo-nome').style.display = 'block';
-    document.getElementById('passo-palpites').style.display = 'none';
-  } catch(e) { toast(e.message,'err'); }
+    if (b.encerrado) { toast('Este bolão está encerrado.', 'err'); return; }
+    const d = await api(`/api/boloes/${codigo}/entrar`, 'POST');
+    document.getElementById('e-codigo').value = '';
+    toast(d.ja_inscrito ? `Você já estava no bolão como "${d.nome}"` : `Entrou como "${d.nome}"! 🎉`);
+    await abrirPalpites(codigo, d.nome);
+  } catch(e) { toast(e.message, 'err'); }
 }
 
-async function entrarNoBolao() {
-  const nome = document.getElementById('e-nome').value.trim();
-  if (!nome) { toast('Digite seu nome.', 'err'); return; }
+async function carregarListaParticipando() {
+  document.getElementById('passo-lista-boloes').style.display = 'block';
+  document.getElementById('passo-palpites').style.display = 'none';
+  const el = document.getElementById('lista-participando');
+  el.innerHTML = '<div class="loading">Carregando…</div>';
   try {
-    await api(`/api/boloes/${codigoBuscado}/entrar`, 'POST', { nome });
-    nomeParticipante = nome;
-    toast(`Bem-vindo, ${nome}!`);
-    await carregarPalpites();
-  } catch(e) {
-    // se já está no bolão, entra direto
-    if (e.message.includes('já está')) {
-      nomeParticipante = nome;
-      await carregarPalpites();
-    } else { toast(e.message, 'err'); }
-  }
+    const list = await api('/api/meus-boloes-participando');
+    if (!list.length) {
+      el.innerHTML = `<div class="empty"><div class="ei">🎯</div><p>Você ainda não participa de nenhum bolão.<br>Digite um código acima para entrar!</p></div>`;
+      return;
+    }
+    el.innerHTML = `<div class="bolao-list">${list.map(b => `
+      <div class="bolao-item" onclick="abrirPalpites('${b.codigo}','${b.meu_nome.replace(/'/g,"\\'")}')">
+        <div class="bi-left">
+          <div class="b-icon">⚽</div>
+          <div>
+            <div class="b-nome">${b.nome}</div>
+            <div class="b-meta">${b.codigo} · ${b.total_partidas} partida(s) · ${b.partidas_encerradas} encerrada(s)</div>
+          </div>
+        </div>
+        <span class="badge ${b.encerrado ? 'be' : 'ba'}">${b.encerrado ? 'Encerrado' : 'Aberto'}</span>
+      </div>`).join('')}
+    </div>`;
+  } catch(e) { el.innerHTML = '<div class="loading">Erro ao carregar.</div>'; }
+}
+
+async function abrirPalpites(codigo, nome) {
+  codigoBuscado = codigo;
+  nomeParticipante = nome;
+  document.getElementById('passo-lista-boloes').style.display = 'none';
+  document.getElementById('passo-palpites').style.display = 'block';
+  await carregarPalpites();
 }
 
 async function carregarPalpites() {
-  document.getElementById('passo-nome').style.display = 'none';
-  document.getElementById('passo-palpites').style.display = 'block';
   document.getElementById('palpites-header').innerHTML = `
     <div style="display:flex;align-items:center;justify-content:space-between">
       <div>
@@ -404,103 +610,10 @@ async function carregarPalpites() {
   } catch(e) { lista.innerHTML = '<div class="loading">Erro ao carregar.</div>'; }
 }
 
-function renderPartidaParticipante(p) {
-  const meu = p.meu_palpite;
-  if (p.encerrada) {
-    const acertou = meu && meu === p.resultado;
-    const errou = meu && meu !== p.resultado;
-    return `<div class="partida-card enc">
-      <div class="partida-head">
-        <div class="partida-titulo">
-          ${p.casa} <span style="color:var(--text3);font-weight:400">×</span> ${p.visitante}
-          <span class="pts-badge">+${p.pontos}pts</span>
-        </div>
-        ${p.data ? `<div class="partida-meta">${p.data}</div>` : ''}
-      </div>
-      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
-        <div style="font-size:13px;color:var(--text2)">
-          Resultado: ${resLabel(p.resultado, p.casa, p.visitante)}
-        </div>
-        <div>
-          ${meu ? `Seu palpite: ${palpiteLabel(meu)}` : '<span style="font-size:12px;color:var(--text3)">Sem palpite</span>'}
-        </div>
-        ${acertou ? '<div class="acertou">✅ Acertou! +'+p.pontos+' pts</div>' : ''}
-        ${errou   ? '<div class="errou">❌ Errou</div>' : ''}
-      </div>
-    </div>`;
-  }
-
-  const cssCasa = meu==='casa' ? 'pbtn selected-casa' : 'pbtn';
-  const cssVis  = meu==='visitante' ? 'pbtn selected-visitante' : 'pbtn';
-  const cssEmp  = meu==='empate' ? 'pbtn-empate selected-empate pbtn' : 'pbtn-empate pbtn';
-  return `<div class="partida-card" id="pc-${p.id}">
-    <div class="partida-head">
-      <div class="partida-titulo">
-        ${p.casa} <span style="color:var(--text3);font-weight:400">×</span> ${p.visitante}
-        <span class="pts-badge">+${p.pontos}pts</span>
-      </div>
-      ${p.data ? `<div class="partida-meta">${p.data}</div>` : ''}
-    </div>
-    ${meu ? `<div style="font-size:12px;color:var(--text2);margin-bottom:6px">Seu palpite: ${palpiteLabel(meu)}</div>` : ''}
-    <div class="palpite-btns">
-      <button class="${cssCasa}" onclick="palpitar('${p.id}','casa')">${p.casa}</button>
-      <button class="${cssEmp}" onclick="palpitar('${p.id}','empate')">Empate</button>
-      <button class="${cssVis}" onclick="palpitar('${p.id}','visitante')">${p.visitante}</button>
-    </div>
-    <div style="font-size:11px;color:var(--text3);margin-top:6px;text-align:right">${p.total_palpites} palpite(s)</div>
-  </div>`;
-}
-
-async function palpitar(pid, palpite) {
-  try {
-    await api(`/api/boloes/${codigoBuscado}/partidas/${pid}/palpite`, 'POST',
-      { nome: nomeParticipante, palpite });
-    toast('Palpite salvo!');
-    await carregarPalpites();
-  } catch(e) { toast(e.message, 'err'); }
-}
-
-async function verRankingParticipante() {
-  try {
-    const ranking = await api(`/api/boloes/${codigoBuscado}/ranking`);
-    mostrarModalRanking(ranking);
-  } catch(e) { toast(e.message,'err'); }
-}
-
-function mostrarModalRanking(ranking) {
-  const medals = ['🥇','🥈','🥉'];
-  const rows = ranking.map((r,i) => {
-    const destaque = r.nome === nomeParticipante ? 'style="background:var(--green-bg)"' : '';
-    const med = i < 3 ? medals[i] : '';
-    return `<tr ${destaque}>
-      <td><span class="pos pos-${i+1}">${med || (i+1)+'º'}</span></td>
-      <td class="rk-nome">${r.nome}${r.nome===nomeParticipante?' <span style="font-size:11px;color:var(--green)">(você)</span>':''}</td>
-      <td class="rk-pts">${r.pontos}</td>
-      <td class="rk-acertos" style="text-align:right">${r.acertos}/${r.palpites}</td>
-    </tr>`;
-  }).join('');
-  const html = `<div style="position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;display:flex;align-items:center;justify-content:center;padding:1rem" onclick="if(event.target===this)this.remove()">
-    <div style="background:var(--surface);border-radius:16px;padding:1.5rem;width:100%;max-width:400px;max-height:80vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.2)">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">
-        <div style="font-size:16px;font-weight:700">🏆 Classificação</div>
-        <button onclick="this.closest('div[style*=fixed]').remove()" style="background:none;border:none;font-size:18px;cursor:pointer;color:var(--text3)">✕</button>
-      </div>
-      <table class="ranking-table">
-        <thead><tr><th>#</th><th>Participante</th><th>Pts</th><th style="text-align:right">Acertos</th></tr></thead>
-        <tbody>${rows || '<tr><td colspan="4" class="loading">Sem dados ainda.</td></tr>'}</tbody>
-      </table>
-    </div>
-  </div>`;
-  document.body.insertAdjacentHTML('beforeend', html);
-}
-
-function voltarBusca() {
-  codigoBuscado = null; nomeParticipante = null;
-  document.getElementById('passo-buscar').style.display = 'block';
-  document.getElementById('passo-nome').style.display = 'none';
-  document.getElementById('passo-palpites').style.display = 'none';
-  document.getElementById('e-codigo').value = '';
-  document.getElementById('e-nome').value = '';
+function voltarListaParticipando() {
+  codigoBuscado = null;
+  nomeParticipante = null;
+  carregarListaParticipando();
 }
 
 // ── MEUS BOLÕES / ADMIN ───────────────────────────────────────────────────────
@@ -595,6 +708,16 @@ async function renderAdmin(codigo) {
         <button class="btn btn-green" onclick="adicionarPartida()">➕ Adicionar partida</button>
       </div>
 
+      <!-- participantes -->
+      <div class="card">
+        <div class="card-title">Participantes (${b.participantes.length})</div>
+        ${b.participantes.length ? b.participantes.map(nome => `
+          <div class="part-row">
+            <span class="pr-nome">${nome}</span>
+            <button class="part-del" onclick="removerParticipante('${codigo}','${nome.replace(/'/g, "\\'")}')">🗑️ Remover</button>
+          </div>`).join('') : '<div style="text-align:center;padding:.75rem;color:var(--text3);font-size:13px">Nenhum participante ainda.</div>'}
+      </div>
+
       <!-- partidas -->
       <div class="section-label" style="margin-top:0">Partidas</div>
       <div id="partidas-admin">${partidasHtml}</div>
@@ -684,6 +807,15 @@ async function deletarPartida(pid) {
     await api(`/api/boloes/${window._adminCodigo}/partidas/${pid}`, 'DELETE');
     toast('Partida removida.');
     await renderAdmin(window._adminCodigo);
+  } catch(e) { toast(e.message,'err'); }
+}
+
+async function removerParticipante(codigo, nome) {
+  if (!confirm(`Remover "${nome}" do bolão? Os palpites dele(a) também serão apagados.`)) return;
+  try {
+    await api(`/api/boloes/${codigo}/participantes/${encodeURIComponent(nome)}`, 'DELETE');
+    toast(`${nome} removido(a) do bolão.`);
+    await renderAdmin(codigo);
   } catch(e) { toast(e.message,'err'); }
 }
 
